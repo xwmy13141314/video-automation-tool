@@ -1,0 +1,24 @@
+# 依赖
+node_modules/
+.npm/
+
+# 渲染中间产物（render.mjs / HyperFrames 运行时重生）
+mvp/renders/work-*/
+mvp/renders/_out.mp4
+mvp/renders/*.png
+
+# 配音中间产物（render.mjs 运行时生成）
+mvp/assets/_vo*.mp3
+mvp/assets/_vo*.wav
+mvp/_concat.txt
+mvp/_ts.json
+
+# 生成的 composition（render.mjs 从模板 + scene.json 生成）
+mvp/index.html
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 早期内部设计文档（仅本地保留，不入开源仓库）
+docs/archive/

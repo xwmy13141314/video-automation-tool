@@ -1,0 +1,35 @@
+{
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "+30%",
+  "fadeIn": 0.3,
+  "fadeOut": 0.3,
+  "pages": [
+    {
+      "eyebrow": "续航能力",
+      "title": "超长续航，14天不断电。",
+      "voice": "续航，14天。",
+      "accent": "#00E5A0",
+      "kpis": [
+        { "val": 14, "unit": "天", "label": "超长续航", "desc": "一次充电持久陪伴" }
+      ]
+    },
+    {
+      "eyebrow": "防水性能",
+      "title": "深度防水，50米无忧。",
+      "voice": "防水，50米。",
+      "accent": "#4A9EFF",
+      "kpis": [
+        { "val": 50, "unit": "米", "label": "深度防水", "desc": "游泳潜水畅快使用" }
+      ]
+    },
+    {
+      "eyebrow": "佩戴体验",
+      "title": "轻盈无感，仅25克。",
+      "voice": "仅重，25克。",
+      "accent": "#FFB84A",
+      "kpis": [
+        { "val": 25, "unit": "克", "label": "极致轻量", "desc": "全天佩戴舒适无负担" }
+      ]
+    }
+  ]
+}
