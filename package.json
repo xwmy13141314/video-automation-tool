@@ -1,6 +1,6 @@
 {
   "name": "data-video-automation",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "数据型视频自动化生成工具：配置 JSON → 中文配音 → 确定性渲染 → MP4",
   "license": "MIT",
   "private": true,

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<title>多页数据轮播 · 模板</title>
+<title>多版式汇报 · 模板</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 <style>
@@ -14,36 +14,91 @@
      GSAP opacity 仅做段内交叉淡入。--accent-rgb 由 render.mjs 按 hex 注入 */
   .scene { position: absolute; inset: 0; opacity: 0;
     background: radial-gradient(ellipse at 35% 45%, rgba(var(--accent-rgb), 0.13), transparent 62%), #0a0b0d; }
-  .top-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); z-index: 60; }
+  .top-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); z-index: 60; }
 
-  .inner { position: absolute; inset: 0; padding: 130px 150px; display: flex; flex-direction: column; justify-content: center; }
-  .eyebrow { font-size: 24px; letter-spacing: 0.34em; text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace; color: var(--accent); margin-bottom: 32px; }
-  h1 { font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif; font-size: 104px; font-weight: 700;
-    line-height: 1.05; letter-spacing: -2px; margin-bottom: 64px; }
-  .kpis { display: flex; gap: 40px; }
-  .kpi { flex: 0 0 auto; min-width: 360px; padding: 44px 48px; background: rgba(255,255,255,0.025);
+  .inner { position: absolute; inset: 0; padding: 110px 140px; display: flex; flex-direction: column; justify-content: center; }
+  .eyebrow { font-size: 22px; letter-spacing: 0.34em; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace; color: var(--accent); margin-bottom: 26px; }
+  h1 { font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif; font-size: 84px; font-weight: 700;
+    line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 52px; }
+  .content { width: 100%; }
+
+  /* === KPI 数据版式（保留兼容） === */
+  .kpis { display: flex; gap: 36px; }
+  .kpi { flex: 0 0 auto; min-width: 320px; padding: 40px 44px; background: rgba(255,255,255,0.025);
     border: 1px solid rgba(255,255,255,0.08); border-top: 3px solid var(--accent); }
-  .kpi .label { font-size: 18px; letter-spacing: 0.18em; color: rgba(245,245,247,0.5);
-    font-family: 'JetBrains Mono', monospace; text-transform: uppercase; margin-bottom: 20px; }
-  .big-row { display: flex; align-items: baseline; gap: 14px; }
-  .big { font-family: 'Space Grotesk', sans-serif; font-size: 200px; font-weight: 800; line-height: 0.9; letter-spacing: -6px; }
-  .unit { font-family: 'Space Grotesk', sans-serif; font-size: 56px; font-weight: 500; color: var(--accent); }
-  .desc { margin-top: 16px; font-size: 20px; color: rgba(245,245,247,0.6); font-weight: 300; }
-  .hint { position: absolute; top: 44px; right: 150px; font-family: 'JetBrains Mono', monospace;
-    font-size: 15px; letter-spacing: 0.2em; color: rgba(245,245,247,0.3); z-index: 50; }
+  .kpi .label { font-size: 17px; letter-spacing: 0.18em; color: rgba(245,245,247,0.5);
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase; margin-bottom: 18px; }
+  .big-row { display: flex; align-items: baseline; gap: 12px; }
+  .big { font-family: 'Space Grotesk', sans-serif; font-size: 170px; font-weight: 800; line-height: 0.9; letter-spacing: -5px; }
+  .unit { font-family: 'Space Grotesk', sans-serif; font-size: 50px; font-weight: 500; color: var(--accent); }
+  .desc { margin-top: 14px; font-size: 19px; color: rgba(245,245,247,0.6); font-weight: 300; }
+
+  /* === cards 卡片网格 === */
+  .cards { display: flex; gap: 28px; }
+  .cards.grid6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .card { flex: 1 1 0; min-width: 0; padding: 38px 34px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.09); border-top: 3px solid var(--accent); position: relative; }
+  .card.hl { background: rgba(var(--accent-rgb), 0.09); border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset; }
+  .card .ic { font-size: 46px; line-height: 1; margin-bottom: 20px; }
+  .card h3 { font-family: 'Space Grotesk','Noto Sans SC',sans-serif; font-size: 30px; font-weight: 700; margin-bottom: 14px; color: #fff; }
+  .card p { font-size: 19px; color: rgba(245,245,247,0.62); line-height: 1.55; font-weight: 300; }
+  .card .tag { position: absolute; top: 20px; right: 22px; font-size: 13px;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; color: var(--accent); }
+
+  /* === bars 进度条 === */
+  .bars { display: flex; flex-direction: column; gap: 26px; max-width: 1180px; }
+  .bar-row { width: 100%; }
+  .bar-row .lab { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 22px; margin-bottom: 10px; color: rgba(245,245,247,0.85); }
+  .bar-row .pct { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 24px; }
+  .bar-row .pct.ok { color: #00ff9d; } .bar-row .pct.warn { color: #ffb84d; } .bar-row .pct.bad { color: #ff4d6d; }
+  .btrack { height: 18px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; }
+  .bfill { height: 100%; border-radius: 10px; }
+  .bfill.ok { background: linear-gradient(90deg, var(--accent), #00ff9d); }
+  .bfill.warn { background: linear-gradient(90deg, var(--accent), #ffb84d); }
+  .bfill.bad { background: linear-gradient(90deg, #ff4d6d, #ffb84d); }
+
+  /* === table 表格 === */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 22px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; overflow: hidden; }
+  .tbl th { background: rgba(var(--accent-rgb), 0.14); color: var(--accent); text-align: left;
+    padding: 20px 26px; font-size: 19px; letter-spacing: 0.05em; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+  .tbl td { padding: 18px 26px; border-top: 1px solid rgba(255,255,255,0.05); color: rgba(245,245,247,0.82); }
+  .tbl td.ok { color: #00ff9d; font-weight: 700; }
+  .tbl td.bad { color: #ff4d6d; font-weight: 700; }
+  .tbl td.warn { color: #ffb84d; font-weight: 700; }
+  .tbl td.lead { font-weight: 600; color: #fff; }
+  .tbl.compact td, .tbl.compact th { padding: 13px 22px; font-size: 19px; }
+  .lv { display: inline-flex; gap: 4px; }
+  .lv i { width: 13px; height: 13px; border-radius: 3px; background: rgba(255,255,255,0.12); display: inline-block; }
+  .lv i.d3 { background: #ff4d6d; } .lv i.d2 { background: #ffb84d; } .lv i.d1 { background: #5a6b9a; }
+  .pill { display: inline-block; padding: 4px 14px; border-radius: 16px; font-size: 16px; font-weight: 600; }
+  .pill.red { background: rgba(255,77,109,0.15); color: #ff4d6d; }
+  .pill.org { background: rgba(255,184,77,0.15); color: #ffb84d; }
+  .pill.grn { background: rgba(0,255,157,0.12); color: #00ff9d; }
+
+  /* === cover 封面/收尾 === */
+  .scene.cover .inner { align-items: center; text-align: center; justify-content: center; }
+  .scene.cover .eyebrow { text-align: center; }
+  .scene.cover h1 { font-size: 124px; margin-bottom: 44px; max-width: 1500px; }
+  .cover-sub { font-size: 34px; color: rgba(245,245,247,0.72); font-weight: 300; line-height: 1.5; max-width: 1200px; }
+  .cover-sub b { color: var(--accent); font-weight: 500; }
 </style>
 </head>
 <body>
 <div id="stage" data-composition-id="root" data-start="0" data-duration="{{TOTAL_DUR}}" data-width="1920" data-height="1080">{{SECTIONS}}</div>
 <script>
-  // 通用数据驱动 timeline：render.mjs 注入 __PLAN，遍历 pages 构建（确定性，seek 正确）
+  // 通用数据驱动 timeline：render.mjs 注入 __PLAN（含 type/count），按页类型构建入场（确定性，seek 正确）
   const PLAN = {{PLAN_JSON}};
   const main = gsap.timeline({ paused: true });
 
   PLAN.pages.forEach((pg, i) => {
     const sec = '#page' + i;
     const isLast = i === PLAN.pages.length - 1;
+    const base = pg.start + PLAN.fadeIn;
 
     // section 级显隐：set/to 显式（规避 seek 不复位）；clip 时段已由框架硬控
     // 页间 fadeIn/fadeOut 接力（不重叠）→ 声画同步，避免两句配音叠加
@@ -51,12 +106,15 @@
     main.to(sec, { opacity: 1, duration: PLAN.fadeIn, ease: 'power2.out' }, pg.start);
     if (!isLast) main.to(sec, { opacity: 0, duration: PLAN.fadeOut, ease: 'power2.in' }, pg.start + pg.dur - PLAN.fadeOut);
 
-    // 内容入场（页内时长由配音驱动）
-    main.from(sec + ' .eyebrow', { opacity: 0, y: 16, duration: 0.3 }, pg.start + PLAN.fadeIn);
-    main.from(sec + ' h1', { opacity: 0, y: 40, duration: 0.4, ease: 'power3.out' }, pg.start + PLAN.fadeIn + 0.05);
-    pg.kpis.forEach((kpi, j) => {
-      main.from(sec + ' .kpi:nth-child(' + (j + 1) + ')', { opacity: 0, y: 30, duration: 0.3, ease: 'power2.out' }, pg.start + PLAN.fadeIn + 0.2 + j * 0.15);
-    });
+    // 内容入场（页内 from 安全；Sprint2 验证）；cover 用 title+sub，普通页用 content 子元素错峰
+    main.from(sec + ' .eyebrow', { opacity: 0, y: 16, duration: 0.3 }, base);
+    main.from(sec + ' h1', { opacity: 0, y: 40, duration: 0.45, ease: 'power3.out' }, base + 0.06);
+    if (pg.type === 'cover') {
+      main.from(sec + ' .cover-sub', { opacity: 0, y: 26, duration: 0.5, ease: 'power2.out' }, base + 0.35);
+    } else {
+      const stag = Math.min(0.12, (pg.dur * 0.3) / Math.max(1, pg.count || 3));
+      main.from(sec + ' .content > *', { opacity: 0, y: 32, duration: 0.32, ease: 'power2.out', stagger: stag }, base + 0.28);
+    }
   });
 
   window.__timelines = window.__timelines || {};

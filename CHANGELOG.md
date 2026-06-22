@@ -2,6 +2,16 @@
 
 本格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] - 2026-06-22
+
+### 多版式汇报片：cover / cards / bars / table
+
+- **多版式渲染**：`scene.json` 的 page 新增 `type` 字段（`cover` / `cards` / `bars` / `table` / `kpis`，`kpis` 向后兼容旧配置）。`render.mjs` 按 type 生成内容区，模板 GSAP 通用化（`.content>*` 错峰入场 + cover 分支）。
+- **富内容支持**：cards（icon / tag / highlight）、bars（ok/warn/bad 三色进度条）、table（单元格支持 `{text,tone}` 与 `{html,tone}`，后者原样输出，可嵌色点 `.lv` / 标签 `.pill`）。
+- **受控 HTML 文案**：`scene.json` 为受控配置，需内联 HTML 的字段（cover `subtitle` 高亮、table 富单元格 `cell.html`）不转义，纯文本字段仍转义，兼顾安全与表现力。
+- **实测规模**：12 页混合版式（2 cover + 5 cards + 1 bars + 3 table）汇报片，43s 带中文配音端到端出片。
+- **确定性不变**：多 section 显隐双保险（clip 时段框架层硬控 + GSAP `set/to` opacity），抽帧验证各页零残留。
+
 ## [1.0.0] - 2026-06-16
 
 ### 首个完整版：多页数据轮播 + 中文配音

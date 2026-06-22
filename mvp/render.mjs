@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// 多页数据轮播编排（带配音）：每页 edge-tts → 配音时长驱动时间 plan → 生成 N 个 section → 软件渲染 → ffmpeg 混音
+// 多版式汇报视频编排（带配音）：每页按 type 渲染内容（cover/cards/bars/table/kpis）→ edge-tts → 配音时长驱动时间 plan → 生成 N 个 section → 软件渲染 → ffmpeg 混音
 // 用法: node render.mjs scene.json
-// 说明：数字直接显示终值（不计数），故无需 whisper 字级对齐——每页配音时长即该页时长，声画天然同步
+// 说明：内容直接显示终值（数字/表格/进度条静态），故无需 whisper 字级对齐——每页配音时长即该页时长，声画天然同步
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 
@@ -46,32 +46,89 @@ const totalDur = +acc.toFixed(3);
 fs.writeFileSync('_concat.txt', pages.map((_, i) => `file 'assets/_vo_${i}.wav'`).join('\n'));
 sh(`ffmpeg -y -f concat -safe 0 -i _concat.txt -c copy assets/_vo.wav`, { stdio: 'ignore' });
 
-// === 生成 section HTML ===
+// === 内容区生成器（按 type；外层 .content 统一由 section 包裹）===
 const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// 表格单元格：string | {text,tone} | {html,tone}（html 原样输出，用于嵌入色点/pill）
+const cellHtml = (c) => {
+  if (c == null) return '<td></td>';
+  if (typeof c === 'string') return `<td>${esc(c)}</td>`;
+  const cls = c.tone ? ` class="${c.tone}"` : '';
+  return `<td${cls}>${c.html != null ? c.html : esc(c.text || '')}</td>`;
+};
+
+function genContent(pg) {
+  const t = pg.type || 'kpis';
+  if (t === 'cover') {
+    // subtitle 为配置层受控文案，允许内联 HTML（如 <b> 高亮），故不转义
+    return `<div class="cover-sub">${pg.subtitle || ''}</div>`;
+  }
+  if (t === 'cards') {
+    const cls = pg.cards.length >= 6 ? 'cards grid6' : 'cards';
+    const cards = pg.cards.map((c) => `
+      <div class="card${c.highlight ? ' hl' : ''}">
+        ${c.icon ? `<div class="ic">${esc(c.icon)}</div>` : ''}
+        ${c.tag ? `<div class="tag">${esc(c.tag)}</div>` : ''}
+        <h3>${esc(c.title)}</h3>
+        <p>${esc(c.desc || '')}</p>
+      </div>`).join('');
+    return `<div class="${cls}">${cards}</div>`;
+  }
+  if (t === 'bars') {
+    const rows = pg.bars.map((b) => `
+      <div class="bar-row">
+        <div class="lab"><span>${esc(b.label)}</span><span class="pct ${b.tone || 'ok'}">${esc(b.pct + '%')}</span></div>
+        <div class="btrack"><div class="bfill ${b.tone || 'ok'}" style="width:${b.pct}%"></div></div>
+      </div>`).join('');
+    return `<div class="bars">${rows}</div>`;
+  }
+  if (t === 'table') {
+    const head = pg.head ? `<tr>${pg.head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>` : '';
+    const rows = pg.rows.map((r) => `<tr>${r.cells.map(cellHtml).join('')}</tr>`).join('');
+    const compact = pg.compact ? ' compact' : '';
+    return `<table class="tbl${compact}">${head}${rows}</table>`;
+  }
+  // kpis（保留兼容）
+  const kpis = (pg.kpis || []).map((k) => `
+      <div class="kpi">
+        <div class="label">${esc(k.label)}</div>
+        <div class="big-row"><span class="big">${esc(k.val)}</span><span class="unit">${esc(k.unit)}</span></div>
+        <div class="desc">${esc(k.desc || '')}</div>
+      </div>`).join('');
+  return `<div class="kpis">${kpis}</div>`;
+}
+
+// 内容区直接子元素数（供模板 GSAP 计算自适应 stagger）
+const contentCount = (pg) => {
+  const t = pg.type || 'kpis';
+  if (t === 'cards') return pg.cards.length;
+  if (t === 'bars') return pg.bars.length;
+  if (t === 'table') return pg.rows.length;
+  return (pg.kpis || []).length || 1;
+};
+
+// === 生成 section HTML ===
 const sections = plan.map((pg, i) => {
   const accent = pg.accent || '#00E5A0';
   const end = (pg.start + pg.dur).toFixed(1);
-  const kpisHtml = pg.kpis.map((k, j) => `
-      <div class="kpi">
-        <div class="label">${esc(k.label)}</div>
-        <div class="big-row"><span class="big" id="cnt${i}_${j}">${k.val}</span><span class="unit">${esc(k.unit)}</span></div>
-        <div class="desc">${esc(k.desc)}</div>
-      </div>`).join('');
+  const type = pg.type || 'kpis';
+  const eyebrow = (type === 'cover' && !pg.eyebrow) ? '' : `<div class="eyebrow">${esc(pg.eyebrow || '核心参数')}</div>`;
   return `
-  <section id="page${i}" class="scene clip" data-start="${pg.start}" data-duration="${pg.dur}"
+  <section id="page${i}" class="scene clip ${type}" data-start="${pg.start}" data-duration="${pg.dur}"
            style="--accent:${accent};--accent-rgb:${hexRgb(accent)}">
     <div class="top-line"></div>
-    <div class="hint">PAGE ${i + 1} · ${pg.start.toFixed(1)}–${end}s</div>
     <div class="inner">
-      <div class="eyebrow">${esc(pg.eyebrow || '核心参数')}</div>
+      ${eyebrow}
       <h1>${esc(pg.title)}</h1>
-      <div class="kpis">${kpisHtml}</div>
+      <div class="content">${genContent(pg)}</div>
     </div>
   </section>`;
 }).join('');
 
-const planJson = JSON.stringify({ fadeIn: FADE_IN, fadeOut: FADE_OUT, pages: plan.map((p) => ({ start: p.start, dur: p.dur, kpis: p.kpis })) });
+const planJson = JSON.stringify({
+  fadeIn: FADE_IN, fadeOut: FADE_OUT,
+  pages: plan.map((p) => ({ type: p.type || 'kpis', start: p.start, dur: p.dur, count: contentCount(p) })),
+});
 let html = fs.readFileSync('templates/index.template.html', 'utf8');
 html = html.replaceAll('{{TOTAL_DUR}}', totalDur).replaceAll('{{SECTIONS}}', sections).replaceAll('{{PLAN_JSON}}', planJson);
 fs.writeFileSync('index.html', html);
